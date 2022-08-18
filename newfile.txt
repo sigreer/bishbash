@@ -1,0 +1,16 @@
+Nextcloud
+init.sh
+mkdir -p /tilt/apps/nextcloud/{data,config,custom_apps,themes,config}
+change config file:
+  'trusted_domains' => 
+  array (
+    0 => '192.168.201.173',
+    1 => 'nextcloud.tilttech.co.uk',
+    2 => 'nextcloud.local',
+  ),
+  'trusted_proxies' => 
+  array (
+    0 => '192.168.201.30',
+  ),
+
+
