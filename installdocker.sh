@@ -1,4 +1,6 @@
 #!/bin/bash
+COMPOSE_VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+
 echo "Updating System"
 apt update
 echo "Upgrading System"
@@ -23,3 +25,7 @@ echo "Installation complete"
 DOCKERVERSION=$(docker -v)
 DOCKERCOMPOSEVERSION=$(docker-compose -v)
 echo "Installed $DOCKERVERSION and $DOCKERCOMPOSEVERSION"
+
+
+
+download/v2.10.0/docker-compose-Linux-x86_64
