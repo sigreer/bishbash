@@ -51,7 +51,7 @@ alias comp2='docker-compose up'
 alias recomp='docker compose down && docker-compose up'
 alias comp='docker compose up'
 alias comped='nano docker-compose.yml'
-alias compbk='cp docker-compose.yml docker-compose.backup"$(date)".yml'
+alias compbk='cp docker-compose.yml docker-compose.backup`echo \$\("date"\)`.yml'
 EOB
 )
 
