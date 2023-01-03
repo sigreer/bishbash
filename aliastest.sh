@@ -36,5 +36,36 @@ Session: $sessiontype
 Current User's Shell: $SHELL
 Autojump Installed: $autojumpinst
 EndOfMessage
-exit
 
+aliases_general=$(cat <<EOF
+alias myip='curl ifconfig.me'
+alias sortsize='ls --human-readable --size -1 -S --classify'
+alias sortmodified="/bin/ls -lt | awk '{print \$6,\$7,\$8,\$9,\$10}' "
+alias logtail='tail -f -n 50 /var/log/syslog'
+EOF
+)
+
+aliases_docker=$(cat <<EOB
+alias recomp2='docker-compose down && docker-compose up'
+alias comp2='docker-compose up'
+alias recomp='docker compose down && docker-compose up'
+alias comp='docker compose up'
+alias comped='nano docker-compose.yml'
+alias compbk='cp docker-compose.yml docker-compose.backup"$(date)".yml'
+EOB
+)
+
+if [[ $osname == "ManjaroLinux" ]] && [[ -e ~/.${currentshell}rc ]]; then
+    [[ -e "~/.zsh_custom_aliases" ]] && rm ~/.zsh_custom_aliases && echo "deleted ~/.zsh_custom_aliases.   Recreating..."
+cat > ~/.zsh_custom_aliases <<ALIASES 
+${aliases_general}
+${aliases_docker}
+ALIASES
+grep -qxF 'source ~/.zsh_custom_aliases' ~/.zshrc || echo 'source ~/.zsh_custom_aliases' >> ~/.zshrc
+source ~/.zsh_custom_aliases
+else
+    echo "Errored, exiting"
+    exit
+fi
+echo "script finished"
+exit
