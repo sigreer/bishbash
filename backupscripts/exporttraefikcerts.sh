@@ -1,5 +1,6 @@
 #!/bin/sh
-# ./export-traefik-v2-certificate.sh DOMAIN
+# Usage:
+# ./exporttraefikcerts.sh [domain]
 
 set -e # abort on errors
 set -u # abort on unset variables
