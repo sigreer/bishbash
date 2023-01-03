@@ -1,0 +1,6 @@
+*.workspace
+*.env
+*.secret*
+/tizen*
+
+
