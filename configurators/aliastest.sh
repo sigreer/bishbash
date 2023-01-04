@@ -15,8 +15,8 @@ instajdebbash () {
 }
 
 installautojump () {
-    if [[ $osname =~ "Debian" || $osname =~ "Ubuntu" && $currentshell == "bash" ]]; then
-        instdebbash
+    if [[ $osname =~ "Debian" || $osname =~ "buntu" && $currentshell == "bash" ]]; then
+        instajdebbash
     else
         cd ~/
         git clone git://github.com/wting/autojump.git
@@ -98,7 +98,7 @@ if [[ $osname == "ManjaroLinux" ]]; then
 fi
 
 ## DEBIAN OR UBUNTU SERVER
-if [[ $osname == "Debian" || $osname =~ "buntu" ]] && [[ $systemtype == "desktop" ]]; then
+if [[ $osname == "Debian" || $osname =~ "buntu" ]] && [[ $systemtype == "server" ]]; then
     echo "Running on $osname $systemtype"
     add_custom_aliases
     exit
