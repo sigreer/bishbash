@@ -7,25 +7,39 @@
 [[ -z $osname ]] && osname=$(uname -s) ## If still empty use uname -s
 [[ -z $osversion ]] && osversion=$(uname -r) ## If still empty use uname -r
 
+instajdebbash () {
+    apt update
+    apt install autojump -y
+    grep -qxF 'autojump' ~/.bashrc || echo '. / usr/share/autojump/autojump.sh' >> ~/.bashrc
+    source ~/.bashrc
+}
 
-installautojump () { 
-    cd ~/
-    git clone git://github.com/wting/autojump.git
-    cd autojump
-    ./install.py
-    [[ -e "/usr/share/autojump" ]] && cd ~/ 
-    rm -R ./autojump 
+installautojump () {
+    if [[ $osname =~ "Debian" || $osname =~ "Ubuntu" && $currentshell == "bash" ]]; then
+        instdebbash
+    else
+        cd ~/
+        git clone git://github.com/wting/autojump.git
+        cd autojump
+        ./install.py
+        [[ -e "/usr/share/autojump" ]] && cd ~/ 
+        rm -R ./autojump
+    fi
+    grep -qxF "autojump" ~/."$currentshell"rc || echo "Autojump isn't referenced in ~/."$currentshell"rc. Pleae check installation" && echo "Autojump installed"
     }
 
 installaj () { aji=1; while [ $aji -le 3 ]; do installautojump aji=$(( aji++ )); done }
 
+
+
 [[ -z $XDG_CURRENT_DESKTOP ]] && systemtype="server" || systemtype="desktop" ## OK
 [[ $systemtype == "desktop" ]] && sessiontype=$(echo $GDMSESSION$XDG_SESSION_TYPE) && desktopenv=$(echo $XDG_CURRENT_DESKTOP) ## OK
 [[ -e "/usr/bin/autojump" ]] && autojumppath="/usr/bin/autojump" && autojumpinst="Yes" || echo "/usr/bin/autojump doesn't exist" ## OK
-[[ $SHELL =~ "zsh" ]] && currentshell="zsh" && shellconfigfile="~/.zshrc" || echo "Shell not zsh"
-
-filecontents=$(cd ~/ && grep ".*autojump.*" .${currentshell}rc) 
-[[ -z $filecontents ]] && installaj || autojumploaded="Yes" 
+[[ $SHELL =~ "zsh" ]] && currentshell="zsh" && shellconfigfile="~/.zshrc"
+[[ $SHELL =~ "bash" ]] && currentshell="bash" && shellconfigfile="~/.bashrc"
+[[ -e /usr/share/autojump ]] || installaj && echo "Autojump not found, installing..."
+filecontainsaj=$(cd ~/ && grep ".*autojump.*" .${currentshell}rc) 
+[[ -z $filecontentsaj ]] && autojumploaded="No" && addajtoshell || autojumploaded="Yes" 
 
 cat << EndOfMessage
 OS Name: $osname
@@ -45,6 +59,7 @@ alias logtail='tail -f -n 50 /var/log/syslog'
 EOF
 )
 
+if [[ $systemtype == "server" ]]; then
 aliases_docker=$(cat <<EOB
 alias recomp2='docker-compose down && docker-compose up'
 alias comp2='docker-compose up'
@@ -54,17 +69,38 @@ alias comped='nano docker-compose.yml'
 alias compbk='cp docker-compose.yml docker-compose.backup`echo \$\("date"\)`.yml'
 EOB
 )
+fi
 
-if [[ $osname == "ManjaroLinux" ]] && [[ -e ~/.${currentshell}rc ]]; then
-    [[ -e "~/.zsh_custom_aliases" ]] && rm ~/.zsh_custom_aliases && echo "deleted ~/.zsh_custom_aliases.   Recreating..."
-cat > ~/.zsh_custom_aliases <<ALIASES 
+function add_custom_aliases () {
+    [[ -e ~/.${currentshell}rc ]] && echo "found ~/."$currentshell"rc"
+    if [[ -e ~/.${currentshell}_custom_aliases ]]; then
+        echo "Found ~/."$currentshell"_custom_aliases. Deleting..."
+        rm ~/."$currentshell"_custom_aliases
+        echo "Deleted ~/."$currentshell"_custom_aliases. Recreating..."
+    fi
+cat > ~/."$currentshell"_custom_aliases <<ALIASES 
 ${aliases_general}
 ${aliases_docker}
 ALIASES
-grep -qxF 'source ~/.zsh_custom_aliases' ~/.zshrc || echo 'source ~/.zsh_custom_aliases' >> ~/.zshrc
-source ~/.zsh_custom_aliases
-else
-    echo "Errored, exiting"
+    [[ -e ~/."$currentshell"_custom_aliases ]] && echo "created ~/."$currentshell"_custom_aliases"
+    echo "Checking for reference in ~/."$currentshell"rc for ~/."$currentshell"_custom_aliases"
+    grep -qxF "source ~/.${currentshell}_custom_aliases" ~/."$currentshell"rc || echo "source ~/."$currentshell"_custom_aliases" >> ~/."$currentshell"rc && echo "Already present, continuing..."
+    echo "Sourcing~/."$currentshell"_custom_aliases"
+    source ~/."$currentshell"_custom_aliases
+    echo "Done setting up aliases."
+}
+
+## MANJARO
+if [[ $osname == "ManjaroLinux" ]]; then
+    echo "Running on $osname $systemtype"
+    add_custom_aliases
+    exit
+fi
+
+## DEBIAN OR UBUNTU SERVER
+if [[ $osname == "Debian" || $osname =~ "buntu" ]] && [[ $systemtype == "desktop" ]]; then
+    echo "Running on $osname $systemtype"
+    add_custom_aliases
     exit
 fi
 echo "script finished"
