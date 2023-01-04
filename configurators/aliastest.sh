@@ -10,7 +10,7 @@
 instajdebbash () {
     apt update
     apt install autojump -y
-    grep -qxF 'autojump' ~/.bashrc || echo '. / usr/share/autojump/autojump.sh' >> ~/.bashrc
+    grep -qxF 'autojump' ~/.bashrc || echo '. /usr/share/autojump/autojump.sh' >> ~/.bashrc
     source ~/.bashrc
 }
 
@@ -30,7 +30,11 @@ installautojump () {
 
 installaj () { aji=1; while [ $aji -le 3 ]; do installautojump aji=$(( aji++ )); done }
 
-
+addajtoshell () {
+    if [[ $currentshell == "bash" ]]; then
+    echo '. /usr/share/autojump/autojump.sh' >> ~/.bashrc
+    fi
+}
 
 [[ -z $XDG_CURRENT_DESKTOP ]] && systemtype="server" || systemtype="desktop" ## OK
 [[ $systemtype == "desktop" ]] && sessiontype=$(echo $GDMSESSION$XDG_SESSION_TYPE) && desktopenv=$(echo $XDG_CURRENT_DESKTOP) ## OK
@@ -71,6 +75,11 @@ EOB
 )
 fi
 
+aliases_git=$(cat <<EOB
+alias quickpush='git add . && git commit -m "quickpush" && git push origin main'
+EOB
+)
+
 function add_custom_aliases () {
     [[ -e ~/.${currentshell}rc ]] && echo "found ~/."$currentshell"rc"
     if [[ -e ~/.${currentshell}_custom_aliases ]]; then
@@ -81,6 +90,7 @@ function add_custom_aliases () {
 cat > ~/."$currentshell"_custom_aliases <<ALIASES 
 ${aliases_general}
 ${aliases_docker}
+${aliases_git}
 ALIASES
     [[ -e ~/."$currentshell"_custom_aliases ]] && echo "created ~/."$currentshell"_custom_aliases"
     echo "Checking for reference in ~/."$currentshell"rc for ~/."$currentshell"_custom_aliases"
