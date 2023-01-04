@@ -4,7 +4,8 @@ apt update
 echo "Upgrading System"
 apt upgrade -y
 echo "Removing previous installations"
-apt-get remove docker docker-engine docker.io containerd runc
+apt-get remove docker docker-engine docker.io containerd runc -y
+apt autoremove
 echo "Installing dependencies"
 apt -y install ca-certificates curl gnupg lsb-release
 echo "Installing Docker GPG key"
