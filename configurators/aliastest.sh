@@ -36,6 +36,27 @@ addajtoshell () {
     fi
 }
 
+installnala () {
+	if [[ $ostype == "Debian" || $ostype =~ "buntu" ]]; then
+	echo "deb http://deb.volian.org/volian/ scar main" | tee /etc/apt/sources.list.d/volian-archive-scar-unstable.list; wget -qO - https://deb.volian.org/volian/scar.key | tee /etc/apt/trusted.gpg.d/volian-archive-scar-unstable.gpg
+	apt update && apt install nala -y
+cat <<EOI >> ~/.${currentshell}rc
+apt() { 
+  command nala "$@"
+}
+sudo() {
+  if [ "$1" = "apt" ]; then
+    shift
+    command sudo nala "$@"
+  else
+    command sudo "$@"
+  fi
+}
+EOI
+fi
+}
+
+
 [[ -z $XDG_CURRENT_DESKTOP ]] && systemtype="server" || systemtype="desktop" ## OK
 [[ $systemtype == "desktop" ]] && sessiontype=$(echo $GDMSESSION$XDG_SESSION_TYPE) && desktopenv=$(echo $XDG_CURRENT_DESKTOP) ## OK
 [[ -e "/usr/bin/autojump" ]] && autojumppath="/usr/bin/autojump" && autojumpinst="Yes" || echo "/usr/bin/autojump doesn't exist" ## OK
@@ -76,7 +97,7 @@ EOB
 fi
 
 aliases_git=$(cat <<EOB
-alias quickpush='git add . && git commit -m "quickpush" && git push origin main'
+alias quickpush='git add . && git commit -m "quickpush" && git push origin'
 EOB
 )
 
@@ -111,6 +132,7 @@ fi
 if [[ $osname == "Debian" || $osname =~ "buntu" ]] && [[ $systemtype == "server" ]]; then
     echo "Running on $osname $systemtype"
     add_custom_aliases
+    installnala
     exit
 fi
 echo "script finished"
