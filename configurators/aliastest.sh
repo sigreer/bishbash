@@ -56,7 +56,20 @@ EOI
 fi
 }
 
+installdops () {
+	if [[ ! -f /usr/bin/dops ]]; then
+	if [[ $ostype == "Debian" || $ostype =~ "buntu" ]]; then
+		wget https://github.com/Mikescher/better-docker-ps/releases/download/v1.6/dops_linux-amd64 /usr/bin/dops
+		chmod +x /usr/bin/dops
+	fi
+	if [[ $ostype == "Arch" ]]; then
+		pamac install dops-bin --no-confirm
+	fi
+	fi
+}
 
+[[ -e /usr/bin/dops ]] && dopsinst="Yes"
+[[ -e /usr/share/docs/nala ]] && nalainst="Yes"
 [[ -z $XDG_CURRENT_DESKTOP ]] && systemtype="server" || systemtype="desktop" ## OK
 [[ $systemtype == "desktop" ]] && sessiontype=$(echo $GDMSESSION$XDG_SESSION_TYPE) && desktopenv=$(echo $XDG_CURRENT_DESKTOP) ## OK
 [[ -e "/usr/bin/autojump" ]] && autojumppath="/usr/bin/autojump" && autojumpinst="Yes" || echo "/usr/bin/autojump doesn't exist" ## OK
@@ -65,15 +78,21 @@ fi
 [[ -e /usr/share/autojump ]] || installaj && echo "Autojump not found, installing..."
 filecontainsaj=$(cd ~/ && grep ".*autojump.*" .${currentshell}rc) 
 [[ -z $filecontentsaj ]] && autojumploaded="No" && addajtoshell || autojumploaded="Yes" 
+[[ $osname =~ "ebian" || $osname =~ "buntu" ]] && ostype="Debian"
+[[ $osname =~ "anjaro" || $osname =~ "rch" ]] && ostype="Arch"
+shownala=` [[ $ostype =~ "ebian" ]] && \
+echo "Nala:" $nalainst ]] )`
 
 cat << EndOfMessage
 OS Name: $osname
+OS Type: $ostype
 OS Version: $osversion
 System Type: $systemtype
 Desktop Environment: $desktopenv
 Session: $sessiontype
-Current User's Shell: $SHELL
-Autojump Installed: $autojumpinst
+Shell: $SHELL$shownala
+Autojump: $autojumpinst
+Dops: $dopsinst
 EndOfMessage
 
 aliases_general=$(cat <<EOF
@@ -125,6 +144,7 @@ ALIASES
 if [[ $osname == "ManjaroLinux" ]]; then
     echo "Running on $osname $systemtype"
     add_custom_aliases
+    installdops
     exit
 fi
 
@@ -133,6 +153,7 @@ if [[ $osname == "Debian" || $osname =~ "buntu" ]] && [[ $systemtype == "server"
     echo "Running on $osname $systemtype"
     add_custom_aliases
     installnala
+    installdops
     exit
 fi
 echo "script finished"
