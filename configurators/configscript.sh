@@ -36,20 +36,27 @@ addajtoshell () {
     fi
 }
 
+checkNala () {
+if [[ -e "/usr/share/docs/nala" ]]; then
+    nalainstalled=1
+fi
+}
+
 installnala () {
-	if [[ $ostype == "Debian" || $ostype =~ "buntu" ]]; then
+    checkNala
+	if [[ $ostype == "Debian" || $ostype =~ "buntu" ]] && [[ $nalainstalled != 1 ]]; then
 	echo "deb http://deb.volian.org/volian/ scar main" | tee /etc/apt/sources.list.d/volian-archive-scar-unstable.list; wget -qO - https://deb.volian.org/volian/scar.key | tee /etc/apt/trusted.gpg.d/volian-archive-scar-unstable.gpg
 	apt update && apt install nala -y
 cat <<EOI >> ~/.${currentshell}rc
 apt() { 
-  command nala "$@"
+  command nala "\$@"
 }
 sudo() {
-  if [ "$1" = "apt" ]; then
+  if [ "\$1" = "apt" ]; then
     shift
-    command sudo nala "$@"
+    command sudo nala "\$@"
   else
-    command sudo "$@"
+    command sudo "\$@"
   fi
 }
 EOI
@@ -81,8 +88,7 @@ filecontainsaj=$(cd ~/ && grep ".*autojump.*" .${currentshell}rc)
 [[ -z $filecontentsaj ]] && autojumploaded="No" && addajtoshell || autojumploaded="Yes" 
 [[ $osname =~ "ebian" || $osname =~ "buntu" ]] && ostype="Debian"
 [[ $osname =~ "anjaro" || $osname =~ "rch" ]] && ostype="Arch"
-shownala=` [[ $ostype =~ "ebian" ]] && \
-echo "Nala:" $nalainst ]] )`
+shownala=$( [[ $ostype =~ "ebian" ]] && echo "Nala:" "$nalainst" )
 
 cat << EndOfMessage
 OS Name: $osname
