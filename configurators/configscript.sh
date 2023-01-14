@@ -59,7 +59,8 @@ fi
 installdops () {
 	if [[ ! -f /usr/bin/dops ]]; then
 	if [[ $ostype == "Debian" || $ostype =~ "buntu" ]]; then
-		wget https://github.com/Mikescher/better-docker-ps/releases/download/v1.6/dops_linux-amd64 /usr/bin/dops
+		wget https://github.com/Mikescher/better-docker-ps/releases/download/v1.6/dops_linux-amd64
+        mv dops_linux-amd4 /usr/bin/dops
 		chmod +x /usr/bin/dops
 	fi
 	if [[ $ostype == "Arch" ]]; then
