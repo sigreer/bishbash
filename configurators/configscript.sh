@@ -11,7 +11,9 @@ instajdebbash () {
     apt update
     apt install autojump -y
     grep -qxF 'autojump' ~/.bashrc || echo '. /usr/share/autojump/autojump.sh' >> ~/.bashrc
-    source ~/.bashrc
+
+# shellcheck source=$HOME/.bashrc
+    source $HOME/.bashrc
 }
 
 installautojump () {
