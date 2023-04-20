@@ -128,7 +128,7 @@ EOF
 
 
 aliases_docker=$(cat <<EOB
-alias recomp2='docker-compose down && docker compose up'
+alias recomp2='docker compose down && docker compose up'
 alias comp2='docker compose up'
 alias recomp='docker compose down && docker compose up'
 alias comp='docker compose up'
