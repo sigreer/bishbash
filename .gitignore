@@ -3,3 +3,7 @@
 *.secret*
 /tizen*
 tdarrscript.sh
+utils/fullbank.csv
+utils/output.csv
+utils/input.csv
+utils/filter.txt
