@@ -20,16 +20,16 @@ wget https://github.com/openresty/headers-more-nginx-module/archive/${HEADERS_MO
 wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
 git clone https://github.com/arut/nginx-rtmp-module
 wget -O- https://github.com/apache/incubator-pagespeed-ngx/archive/v${NPS_VERSION}.tar.gz | tar -xz
-cd "$nps_dir"
+cd "$nps_dir" || exit 1
 [ -e scripts/format_binary_url.sh ] && psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
-wget -O- ${psol_url} | tar -xz
+wget -O- "${psol_url}" | tar -xz
 cd ../
 tar -xvf nginx-${NGINX_VERSION}.tar.gz
 tar -xvf v0.33.tar.gz
 tar -xvf ${PCRE}.tar.bz2
 tar -xvf ${ZLIB}.tar.gz
 #tar -xvf openssl-1.1.1.tar.gz
-cd nginx-${NGINX_VERSION}
+cd "nginx-${NGINX_VERSION}" || exit 1
 ./configure \
 --with-compat \
 --with-file-aio \
@@ -57,5 +57,5 @@ cd nginx-${NGINX_VERSION}
 --with-stream_ssl_preread_module \
 --with-pcre=../${PCRE} \
 --with-zlib=../${ZLIB} \
---with-cc-opt='-g -O2 -fdebug-prefix-map=/data/builder/debuild/nginx-${NGINX_VERSION}/debian/debuild-base/nginx-${NGINX_VERSION}=. -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
---with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie'
+--with-cc-opt="-g -O2 -fdebug-prefix-map=/data/builder/debuild/nginx-${NGINX_VERSION}/debian/debuild-base/nginx-${NGINX_VERSION}=. -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC" \
+--with-ld-opt="-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie"

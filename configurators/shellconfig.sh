@@ -99,7 +99,7 @@ installdops () {
 [[ -e /usr/share/docs/nala ]] && nalainst="Yes"
 [[ -z $XDG_CURRENT_DESKTOP ]] && systemtype="server" || systemtype="desktop" ## OK
 [[ $systemtype == "desktop" ]] && sessiontype=$(echo "$GDMSESSION"$XDG_SESSION_TYPE) && desktopenv=$(echo "$XDG_CURRENT_DESKTOP") ## OK
-[[ -e "/usr/bin/autojump" ]] && autojumppath="/usr/bin/autojump" && autojumpinst="Yes" || echo "/usr/bin/autojump doesn't exist" ## OK
+[[ -e "/usr/bin/autojump" ]] && autojumpinst="Yes" || echo "/usr/bin/autojump doesn't exist" ## OK
 [[ $SHELL =~ "zsh" ]] && currentshell="zsh" && shellconfigfile="$HOME"/.zshrc
 [[ $SHELL =~ "bash" ]] && currentshell="bash" && shellconfigfile="$HOME"/.bashrc
 [[ -e /usr/share/autojump ]] || installaj && echo "Autojump not found, installing..."
