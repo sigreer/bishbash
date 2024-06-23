@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sourcefile="fullbank.csv"
+sourcefile="sourcefile.csv"
 filter="filter.txt"
 readarray -t a < "${filter}"
     for i in "${a[@]}"; do

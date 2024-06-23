@@ -1,6 +1,6 @@
 #!/bin/bash
-sshpass -p $nas1pass scp -r $nas1user@$nas1host:$nas1basedir/certificates/* $tiltdir/certificates/
+sshpass -p "${SSH_PASS} scp -r ${SSH_USER}@${SSH_HOST}:${SSH_HOST_BASEDIR}/certificates/* ${LOCAL_CERTDIR}"
 
-chmod 400 $tiltbasedir/certificates/*
-cp $tiltbasedir/certificates/CAs/* /usr/local/share/ca-certificates/
+chmod 400 "${LOCAL_CERTDIR}/*"
+cp "${LOCAL_CERTDIR}/CAs/*" "/usr/local/share/ca-certificates/"
 update-ca-certificates
