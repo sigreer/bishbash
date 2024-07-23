@@ -2,7 +2,9 @@
 
 cp -a ~/.config/kdedefaults/kwinrc ~/.config/kdedefaults/kwinrc.bkup
 rm -f ~/.config/kdedefaults/kwinrc
-echo "Done."
+ln -s ~/.config/kdedefaults/kwinrc $HOME/kwinrc.bkup
+echo "Copied ~/.config/kdedefaults/kwinrc to ~/.config/kdedefaults/kwinrc.bkup"
+echo "symlinked in home dir as you will probably forget this location"
 while true; do
 	read -p "Restart?" yn
 	case $yn in

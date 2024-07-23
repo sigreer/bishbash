@@ -22,8 +22,11 @@ for file in "$src_dir"/*; do
         dest_dir="$dest_base_dir/$month"
         dest_file="$dest_dir/$filename"
 
-        # Create the destination directory if it does not exist
-        mkdir -p "$dest_dir"
+        # Check if the destination directory exists
+        if [ ! -d "$dest_dir" ]; then
+            echo "Destination directory $dest_dir does not exist. Skipping file $file."
+            continue
+        fi
 
         if [ -f "$dest_file" ]; then
             # File exists in the destination directory
