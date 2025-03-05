@@ -5,6 +5,25 @@ ENV_FILE="$HOME/.env"
 BACKUP_TYPE="all"
 INTERACTIVE=true
 RUNNING_ONLY="yes"
+TEMP_BACKUP_DIR=""
+
+# Function to create and setup temporary directory
+setup_temp_dir() {
+    TEMP_BACKUP_DIR=$(mktemp -d)
+    mkdir -p "$TEMP_BACKUP_DIR/volumes"
+    mkdir -p "$TEMP_BACKUP_DIR/bind_mounts"
+    mkdir -p "$TEMP_BACKUP_DIR/config"
+}
+
+# Function to cleanup temporary directory
+cleanup_temp_dir() {
+    if [[ -n "$TEMP_BACKUP_DIR" && -d "$TEMP_BACKUP_DIR" ]]; then
+        rm -rf "$TEMP_BACKUP_DIR"
+    fi
+}
+
+# Trap to ensure cleanup on script exit
+trap cleanup_temp_dir EXIT
 
 # Function to show usage
 show_usage() {
@@ -137,10 +156,10 @@ backup_volume() {
         fi
     fi
 
-    # Create a tar.gz backup
-    local BACKUP_FILE="$BACKUP_DIR/${VOLUME}_${TIMESTAMP}.tar.gz"
-    tar -czf "$BACKUP_FILE" -C "$VOLUME_PATH" .
-    echo "Backed up $VOLUME to $BACKUP_FILE"
+    # Create a tar backup in the temporary directory
+    local BACKUP_FILE="$TEMP_BACKUP_DIR/volumes/${VOLUME}.tar"
+    tar -cf "$BACKUP_FILE" -C "$VOLUME_PATH" .
+    echo "Backed up $VOLUME"
 }
 
 # Function to backup bind mount
@@ -148,27 +167,38 @@ backup_bind_mount() {
     local SOURCE_PATH=$1
     local MOUNT_NAME=$2
     
-    if [[ ! -d "$SOURCE_PATH" ]]; then
+    if [[ ! -e "$SOURCE_PATH" ]]; then
         echo "Skipping $MOUNT_NAME (source path not accessible)"
         return
     fi
 
-    # Calculate size before backup
-    local MOUNT_SIZE=$(calculate_volume_size "$SOURCE_PATH")
-    echo "Bind mount size: ${MOUNT_SIZE}MB"
-
-    if [[ $MOUNT_SIZE -gt 500 ]] && [[ "$INTERACTIVE" == "true" ]]; then
-        read -p "Warning: Bind mount size exceeds 500MB. Proceed with backup? (y/n): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            echo "Skipping backup of $MOUNT_NAME"
-            return
-        fi
+    # If it's a file, copy it directly
+    if [[ -f "$SOURCE_PATH" ]]; then
+        cp "$SOURCE_PATH" "$TEMP_BACKUP_DIR/bind_mounts/${MOUNT_NAME}"
+        echo "Backed up bind mount file $MOUNT_NAME"
+        return
     fi
 
-    local BACKUP_FILE="$BACKUP_DIR/${MOUNT_NAME}_${TIMESTAMP}.tar.gz"
-    tar -czf "$BACKUP_FILE" -C "$SOURCE_PATH" .
-    echo "Backed up bind mount $MOUNT_NAME to $BACKUP_FILE"
+    # If it's a directory, backup its contents
+    if [[ -d "$SOURCE_PATH" ]]; then
+        # Calculate size before backup
+        local MOUNT_SIZE=$(calculate_volume_size "$SOURCE_PATH")
+        echo "Bind mount size: ${MOUNT_SIZE}MB"
+
+        if [[ $MOUNT_SIZE -gt 500 ]] && [[ "$INTERACTIVE" == "true" ]]; then
+            read -p "Warning: Bind mount size exceeds 500MB. Proceed with backup? (y/n): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Skipping backup of $MOUNT_NAME"
+                return
+            fi
+        fi
+
+        local BACKUP_FILE="$TEMP_BACKUP_DIR/bind_mounts/${MOUNT_NAME}.tar"
+        tar -cf "$BACKUP_FILE" -C "$SOURCE_PATH" .
+        echo "Backed up bind mount directory $MOUNT_NAME"
+        return
+    fi
 }
 
 # Function to get volume size for display
@@ -186,10 +216,13 @@ get_volume_size_display() {
 is_container_running() {
     local SERVICE_NAME=$1
     local PROJECT_NAME=$2
-    local CONTAINER_NAME="${PROJECT_NAME}_${SERVICE_NAME}-1"
     
-    # Check if container exists and is running
-    if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    # Try both underscore and hyphen formats
+    local CONTAINER_NAME_UNDERSCORE="${PROJECT_NAME}_${SERVICE_NAME}-1"
+    local CONTAINER_NAME_HYPHEN="${PROJECT_NAME}-${SERVICE_NAME}-1"
+    
+    # Check if container exists and is running with either naming format
+    if docker ps --format '{{.Names}}' | grep -qE "^(${CONTAINER_NAME_UNDERSCORE}|${CONTAINER_NAME_HYPHEN})$"; then
         return 0
     else
         return 1
@@ -253,8 +286,15 @@ process_compose_file() {
             if [[ ! -z "$BIND_MOUNTS" ]]; then
                 echo "Processing bind mounts for service $SERVICE"
                 echo "$BIND_MOUNTS" | while read -r mount; do
+                    # Resolve relative paths to absolute paths
+                    if [[ "$mount" == "./"* ]]; then
+                        local FULL_PATH="$(cd "$(dirname "$COMPOSE_FILE")" && cd "$(dirname "${mount#./}")" && pwd)/$(basename "${mount#./}")"
+                    else
+                        local FULL_PATH="$mount"
+                    fi
+                    
                     local MOUNT_NAME=$(basename "$mount")
-                    backup_bind_mount "$mount" "${NAME}_${SERVICE}_${MOUNT_NAME}"
+                    backup_bind_mount "$FULL_PATH" "${NAME}_${SERVICE}_${MOUNT_NAME}"
                 done
             fi
         done
@@ -324,11 +364,32 @@ show_compose_file() {
     fi
 }
 
+# Function to create final backup archive
+create_final_backup() {
+    local PROJECT_NAME=$1
+    local COMPOSE_FILE=$2
+    
+    # Create the backup directory if it doesn't exist
+    mkdir -p "$BACKUP_DIR"
+    
+    # Copy compose file to temp directory
+    cp "$COMPOSE_FILE" "$TEMP_BACKUP_DIR/config/compose.yml"
+    
+    # Create final backup archive
+    local FINAL_BACKUP="$BACKUP_DIR/${PROJECT_NAME}_${TIMESTAMP}.tar.gz"
+    tar -czf "$FINAL_BACKUP" -C "$TEMP_BACKUP_DIR" .
+    
+    echo "Created final backup archive: $FINAL_BACKUP"
+}
+
 # Modified handle_directory_mode function
 handle_directory_mode() {
-    local DIR_NAME=$1
+    local DIR_PATH=$1
     local OPERATION=$2
-    local FULL_PATH="$BASE_DOCKER_DIR/$DIR_NAME"
+    local FULL_PATH="$BASE_DOCKER_DIR/$DIR_PATH"
+    
+    # Extract the project name from the last component of the path
+    local PROJECT_NAME=$(basename "$DIR_PATH")
     
     if [[ ! -d "$FULL_PATH" ]]; then
         echo "Error: Directory $FULL_PATH does not exist"
@@ -355,11 +416,19 @@ handle_directory_mode() {
                 continue
             fi
         fi
+        
+        # Create temporary directory for this backup
+        setup_temp_dir
+        
         if [[ "$OPERATION" == "show" ]]; then
-            show_compose_file "$file"
+            NAME="$PROJECT_NAME" show_compose_file "$file"
         else
-            process_compose_file "$file"
+            NAME="$PROJECT_NAME" process_compose_file "$file"
+            create_final_backup "$PROJECT_NAME" "$file"
         fi
+        
+        # Cleanup temporary directory
+        cleanup_temp_dir
     done <<< "$COMPOSE_FILES"
 }
 
