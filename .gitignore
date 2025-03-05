@@ -7,3 +7,12 @@ utils/fullbank.csv
 utils/output.csv
 utils/input.csv
 utils/filter.txt
+sg-hostlist.json
+localonly_*
+*.log
+*.log.*
+*.log.*.*
+*.log.*.*.*
+*.log.*.*.*.*
+*.log.*.*.*.*.*
+*.log.*.*.*.*.*.*

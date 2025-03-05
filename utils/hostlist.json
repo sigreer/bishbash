@@ -1,0 +1,258 @@
+[
+  {
+    "dozzle1": {
+      "host": "dh1",
+      "subdir": "dozzle",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "directus-sideways": {
+      "host": "dh1",
+      "subdir": "directus",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "plane": {
+      "host": "dh1",
+      "subdir": "plane-selfhost/plane-app",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "sandhi": {
+      "host": "dh1",
+      "subdir": "sandhi",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "sideways-website": {
+      "host": "dh1",
+      "subdir": "sideways",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "connectyoulive": {
+      "host": "dh1",
+      "subdir": "connectyoulive",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "keycloak": {
+      "host": "dh1",
+      "subdir": "keycloak",
+      "enabled": false,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "mqttbroker": {
+      "host": "dh1",
+      "subdir": "mqttbroker",
+      "enabled": false,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "monitoring": {
+      "host": "dh1",
+      "subdir": "monitoring",
+      "enabled": false,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "ntfy": {
+      "host": "dh1",
+      "subdir": "ntfy",
+      "enabled": false,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "flowise": {
+      "host": "dh1",
+      "subdir": "flowise",
+      "enabled": false,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "traefik1": {
+      "host": "dh1",
+      "subdir": "traefik",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "vaultwarden": {
+      "host": "dh1",
+      "subdir": "vaultwarden",
+      "enabled": true,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "zammad": {
+      "host": "dh1",
+      "subdir": "zammad",
+      "enabled": false,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "rustdesk": {
+      "host": "dh1",
+      "subdir": "rustdesk",
+      "enabled": false,
+      "last-updated": "2024-03-26"
+    }
+  },
+  {
+    "directus-sidewayssystems": {
+      "host": "dh2",
+      "subdir": "directus",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "directus-simongreer": {
+      "host": "dh2",
+      "subdir": "directus-simongreer",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "dozzle2": {
+      "host": "dh2",
+      "subdir": "dozzle",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "mautic": {
+      "host": "dh2",
+      "subdir": "mautic",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "n8n-ai": {
+      "host": "dh2",
+      "subdir": "n8n-ai",
+      "enabled": false,
+      "last-updated": ""
+    }
+  },
+  {
+    "penpot": {
+      "host": "dh2",
+      "subdir": "penpot",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "posthog": {
+      "host": "dh2",
+      "subdir": "posthog",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "postiz": {
+      "host": "dh2",
+      "subdir": "postiz",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "spotify": {
+      "host": "dh2",
+      "subdir": "spotify",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "traefik2": {
+      "host": "dh2",
+      "subdir": "traefik",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "uptimekuma": {
+      "host": "dh2",
+      "subdir": "uptimekuma",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "wger": {
+      "host": "dh2",
+      "subdir": "wger",
+      "enabled": false,
+      "last-updated": ""
+    }
+  },
+  {
+    "zabbix": {
+      "host": "dh2",
+      "subdir": "zabbix",
+      "enabled": false,
+      "last-updated": ""
+    }
+  },
+  {
+    "documenso-sideways": {
+      "host": "dh3",
+      "subdir": "documenso-sideways",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "documenso-simongreer": {
+      "host": "dh3",
+      "subdir": "documenso-simongreer",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "npm3": {
+      "host": "dh3",
+      "subdir": "npm",
+      "enabled": true,
+      "last-updated": ""
+    }
+  },
+  {
+    "twenty": {
+      "host": "dh3",
+      "subdir": "twenty",
+      "enabled": true,
+      "last-updated": "2025-02-06"
+    }
+  }
+]

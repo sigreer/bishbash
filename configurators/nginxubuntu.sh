@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## This script needs updating.
+
 ## ENVIRONMENT VARIABLES
 SOURCEDIR=/usr/local/src
 

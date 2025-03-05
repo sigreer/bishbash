@@ -1,5 +1,6 @@
 #!/bin/bash
 
+## This script needs updating.
 NGINX_VERSION=1.21.3
 PCRE=pcre-8.45
 ZLIB=zlib-1.2.11
@@ -25,7 +26,7 @@ cd "$nps_dir" || exit 1
 wget -O- "${psol_url}" | tar -xz
 cd ../
 tar -xvf nginx-${NGINX_VERSION}.tar.gz
-tar -xvf v0.33.tar.gz
+tar -xvf ${HEADERS_MORE}.tar.gz
 tar -xvf ${PCRE}.tar.bz2
 tar -xvf ${ZLIB}.tar.gz
 #tar -xvf openssl-1.1.1.tar.gz

@@ -1,4 +1,7 @@
 #!/bin/sh
+
+## This script is old and needs updating. Use at your own risk.
+
 # Usage:
 # ./exporttraefikcerts.sh [domain]
 

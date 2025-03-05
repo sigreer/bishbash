@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## This script needs updating.
+
 source .piler.env
 PILER_DOMAIN="${mypilerdomain}"
 MAILSERVER_DOMAIN="${mypilermaildomain}"

@@ -1,4 +1,7 @@
 #!/bin/bash
+
+## This script is old and needs updating. Use at your own risk.
+
 if [ -f "./.env" ]
 then
 echo "Found .env file in current directory"
