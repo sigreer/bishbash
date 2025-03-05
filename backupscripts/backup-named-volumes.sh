@@ -4,6 +4,7 @@
 ENV_FILE="$HOME/.env"
 BACKUP_TYPE="all"
 INTERACTIVE=true
+RUNNING_ONLY="yes"
 
 # Function to show usage
 show_usage() {
@@ -14,6 +15,7 @@ show_usage() {
     echo "  --bind-mounts   Backup only bind mounts"
     echo "  --env-path=#    Specify custom .env file path"
     echo "  --silent        Suppress all interactive prompts"
+    echo "  --running=#     Only process running containers (yes|no, default: yes)"
     exit 1
 }
 
@@ -50,6 +52,14 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --silent)
             INTERACTIVE=false
+            shift
+            ;;
+        --running=*)
+            RUNNING_ONLY="${1#*=}"
+            if [[ ! "$RUNNING_ONLY" =~ ^(yes|no)$ ]]; then
+                echo "Error: --running flag must be 'yes' or 'no'"
+                exit 1
+            fi
             shift
             ;;
         -*)
@@ -172,6 +182,20 @@ get_volume_size_display() {
     fi
 }
 
+# New function to check if a container is running
+is_container_running() {
+    local SERVICE_NAME=$1
+    local PROJECT_NAME=$2
+    local CONTAINER_NAME="${PROJECT_NAME}_${SERVICE_NAME}-1"
+    
+    # Check if container exists and is running
+    if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Function to process a single compose file
 process_compose_file() {
     local COMPOSE_FILE=$1
@@ -185,31 +209,55 @@ process_compose_file() {
             if [[ ! -z "$VOLUMES" ]]; then
                 echo "Found named volumes: $VOLUMES"
                 for VOLUME in $VOLUMES; do
-                    backup_volume "${NAME}_$VOLUME"
+                    # Check if any service using this volume is running
+                    local VOLUME_USED=false
+                    local SERVICES=$(echo "$JSON_CONFIG" | jq -r '.services | keys[]')
+                    for SERVICE in $SERVICES; do
+                        if [[ "$RUNNING_ONLY" == "no" ]] || is_container_running "$SERVICE" "$NAME"; then
+                            VOLUME_USED=true
+                            break
+                        fi
+                    done
+                    
+                    if [[ "$VOLUME_USED" == "true" ]]; then
+                        backup_volume "${NAME}_$VOLUME"
+                    else
+                        echo "Skipping volume ${NAME}_$VOLUME (no running containers using it)"
+                    fi
                 done
             fi
         fi
     fi
 
     if [[ "$BACKUP_TYPE" != "named" ]]; then
-        # Get bind mounts with improved query
-        local BIND_MOUNTS=$(echo "$JSON_CONFIG" | \
-            jq -r '[ .services | to_entries[] | .value.volumes? // [] | .[]? | 
-                if type == "string" then
-                    select(contains(":")) | split(":")[0]
-                elif type == "object" then
-                    select(.type == "bind") | .source
-                else
-                    empty
-                end
-            ] | unique[]')
-        if [[ ! -z "$BIND_MOUNTS" ]]; then
-            echo "Found bind mounts: $BIND_MOUNTS"
-            for MOUNT in $BIND_MOUNTS; do
-                local MOUNT_NAME=$(basename "$MOUNT")
-                backup_bind_mount "$MOUNT" "${NAME}_${MOUNT_NAME}"
-            done
-        fi
+        # Get services with bind mounts
+        local SERVICES=$(echo "$JSON_CONFIG" | jq -r '.services | to_entries[] | select(.value.volumes != null) | .key')
+        for SERVICE in $SERVICES; do
+            if [[ "$RUNNING_ONLY" == "yes" ]] && ! is_container_running "$SERVICE" "$NAME"; then
+                echo "Skipping bind mounts for service $SERVICE (container not running)"
+                continue
+            fi
+            
+            # Get bind mounts for this service
+            local BIND_MOUNTS=$(echo "$JSON_CONFIG" | \
+                jq -r --arg service "$SERVICE" '[ .services[$service].volumes? // [] | .[]? | 
+                    if type == "string" then
+                        select(contains(":")) | split(":")[0]
+                    elif type == "object" then
+                        select(.type == "bind") | .source
+                    else
+                        empty
+                    end
+                ] | unique[]')
+            
+            if [[ ! -z "$BIND_MOUNTS" ]]; then
+                echo "Processing bind mounts for service $SERVICE"
+                echo "$BIND_MOUNTS" | while read -r mount; do
+                    local MOUNT_NAME=$(basename "$mount")
+                    backup_bind_mount "$mount" "${NAME}_${SERVICE}_${MOUNT_NAME}"
+                done
+            fi
+        done
     fi
 }
 
@@ -249,7 +297,16 @@ show_compose_file() {
     
     if [[ ! -z "$BIND_MOUNTS" ]]; then
         echo -e "\nBind mounts:"
-        echo "$BIND_MOUNTS" | while read -r mount; do
+        local SERVICES=$(echo "$JSON_CONFIG" | jq -r '.services | keys[]')
+        for SERVICE in $SERVICES; do
+            local RUNNING=""
+            if is_container_running "$SERVICE" "$NAME"; then
+                RUNNING="(running)"
+            else
+                RUNNING="(stopped)"
+            fi
+            echo "Service: $SERVICE $RUNNING"
+            
             # Resolve relative paths to absolute paths
             if [[ "$mount" == "./"* ]]; then
                 local FULL_PATH="$(dirname "$COMPOSE_FILE")/${mount#./}"
