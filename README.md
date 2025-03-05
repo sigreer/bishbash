@@ -5,10 +5,9 @@ A collection of scripts and snippets to manage everything from common tasks to f
 ## Table of Contents
 - [Backup Scripts](#backup-scripts)
 - [Utility Scripts](#utility-scripts)
+- [Disk Tools](#disk-tools)
 - [Configuration Scripts](#configuration-scripts)
 - [Diagnostic Tools](#diagnostic-tools)
-- [Disk Management](#disk-management)
-- [Docker Utils](#docker-utils)
 - [Benchmarking Tools](#benchmarking-tools)
 
 ## Backup Scripts
@@ -16,13 +15,13 @@ A collection of scripts and snippets to manage everything from common tasks to f
 Collection of scripts for various backup operations.
 
 ### Docker Volume Backup Tool
-**Script**: `backupscripts/backup-named-volumes.sh`  
-Automated backup tool for Docker named volumes and bind mounts. Creates compressed backups with size checks and interactive confirmations.
+**Script**: `backupscripts/backup-docker-volumes.sh`  
+Automated backup tool for Docker volumes and bind mounts. Creates compressed backups with size checks and interactive confirmations.
 
 #### Features
 - Backs up both named volumes and bind mounts
 - Size-based warnings for large volumes (>500MB)
-- Selective backup options (named volumes only, bind mounts only, or both)
+- Selective backup options
 - Support for running container filtering
 - Interactive and silent modes
 - Custom environment file support
@@ -95,7 +94,7 @@ Automated backup tool for Docker named volumes and bind mounts. Creates compress
 Backups are saved as: `<BACKUP_DIR>/<volume_name>_YYYYMMDD_HHMMSS.tar.gz`
 
 ### Traefik Certificate Export
-**Script**: `backupscripts/exporttraefikcerts.sh`  
+**Script**: `backupscripts/export-traefik-certs.sh`  
 Exports and backs up Traefik SSL certificates.
 
 ## Utility Scripts
@@ -105,14 +104,10 @@ Collection of general utility scripts for system management and maintenance.
 ### System Management
 - `utils/bluetooth-check.sh` - Checks and manages Bluetooth connections
 - `utils/powerdown-nas-b4shutdown.sh` - Safely powers down NAS before system shutdown
-- `utils/update-apps.sh` - Comprehensive application update script
+- `utils/linux-sysprep.sh` - Linux system preparation utility
 - `utils/distrocheck.sh` - Identifies Linux distribution and version
-
-### File Operations
-- `utils/cleanupfilenames.sh` - Cleans and standardizes file names
-- `utils/count_files_and_directories.sh` - Counts files and directories in a path
-- `utils/mvmore.sh` - Enhanced move utility
-- `utils/unclone.sh` - Removes duplicate files
+- `utils/remove-proxmox-nag-screen.sh` - Removes Proxmox subscription nag screen
+- `utils/removesnap.sh` - Removes Snap package manager
 
 ### Display and Desktop
 - `utils/kderecoverdisplay.sh` - Recovers KDE display settings
@@ -120,17 +115,34 @@ Collection of general utility scripts for system management and maintenance.
 
 ### Development Tools
 - `utils/gitstats.sh` - Generates Git repository statistics
-- `utils/symlinkvscode.sh` - VS Code symlink management
-- `utils/certsetup.sh` - Certificate setup utility
 
 ### Network Tools
 - `utils/nmap-hostlist.sh` - Network host discovery
-- `utils/nmaplist.sh` - Enhanced network scanning utility
+- `utils/nmap-prettifier.sh` - Formats nmap output for better readability
 
-### System Cleanup
-- `utils/remove-pbs-nag-screen.sh` - Removes PBS subscription nag screen
-- `utils/remove-pve-nag-screen.sh` - Removes Proxmox subscription nag screen
-- `utils/removesnap.sh` - Removes Snap package manager
+### File Operations
+- `utils/file-and-directory-counter.sh` - Counts files and directories in a path
+- `utils/nfo-filename-transposer.sh` - Manages NFO files and filenames
+- `utils/scp-by-ls.sh` - SCP file transfer utility
+
+## Disk Tools
+
+Scripts for disk operations, encryption, and storage management.
+
+### Disk Operations
+- `disk-tools/listdiskdetails.sh` - Displays detailed information about disk devices
+- `disk-tools/diskusage.sh` - Shows disk usage statistics
+- `disk-tools/nvmereadwritetest.sh` - Performance testing tool for NVMe drives
+- `disk-tools/truenas-full-disk-info.sh` - Detailed TrueNAS disk information
+
+### Data Transfer
+- `disk-tools/_rsyncbatch.sh` - Batch file synchronization utility
+- `disk-tools/_rbatch.sh` - Simplified batch file transfer tool
+- `disk-tools/_rsyncbatchsend.sh` - Batch file sending utility with progress tracking
+
+### Storage Management
+- `disk-tools/luks2enc.sh` - LUKS2 encryption management tool
+- `disk-tools/capture.sh` - Disk imaging and capture utility
 
 ## Configuration Scripts
 
@@ -155,32 +167,6 @@ Tools for system diagnosis and log analysis.
 
 ### Log Analysis
 - `diagnoses/logcatch-fedora.sh` - Fedora system log collection and analysis tool
-
-## Disk Management
-
-Scripts for disk operations, encryption, and storage management.
-
-### Disk Operations
-- `disk/listdiskdetails.sh` - Displays detailed information about disk devices
-- `disk/diskusage.sh` - Shows disk usage statistics
-- `disk/nvmereadwritetest.sh` - Performance testing tool for NVMe drives
-
-### Data Transfer
-- `disk/rsyncbatch.sh` - Batch file synchronization utility
-- `disk/rbatch.sh` - Simplified batch file transfer tool
-- `disk/rsyncbatchsend.sh` - Batch file sending utility with progress tracking
-
-### Storage Management
-- `disk/truenasindexer.sh` - TrueNAS storage indexing and management tool
-- `disk/luks2enc.sh` - LUKS2 encryption management tool
-- `disk/capture.sh` - Disk imaging and capture utility
-
-## Docker Utils
-
-Docker-specific utilities and management scripts.
-
-### Volume Management
-- `utils/docker/backup-persistent-volumes.sh` - Backup utility for Docker persistent volumes
 
 ## Benchmarking Tools
 
