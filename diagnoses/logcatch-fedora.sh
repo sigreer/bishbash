@@ -44,3 +44,4 @@ journalctl --no-pager -k --boot -1 | grep "Modules linked in" > "$LOG_DIR/kernel
 rpm -qa > "$LOG_DIR/installed_packages.log"
 
 echo "Log collection complete. Logs are stored in $LOG_DIR"
+23:38:19.470 UTC user@1000.service wp-event-dispatcher: <WpAsyncEventHook:0x561acccb8ea0> failed: <WpSiStandardLink:0x561accfd3ae0> link failed: 1 of 1 PipeWire links failed to activate
