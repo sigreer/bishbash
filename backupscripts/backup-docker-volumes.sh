@@ -216,17 +216,29 @@ get_volume_size_display() {
 is_container_running() {
     local SERVICE_NAME=$1
     local PROJECT_NAME=$2
+    local COMPOSE_FILE=$3
     
-    # Try both underscore and hyphen formats
-    local CONTAINER_NAME_UNDERSCORE="${PROJECT_NAME}_${SERVICE_NAME}-1"
-    local CONTAINER_NAME_HYPHEN="${PROJECT_NAME}-${SERVICE_NAME}-1"
+    # First check if there's a container_name specified in the compose file
+    local CONTAINER_NAME=$(docker compose -f "$COMPOSE_FILE" config --format json | \
+        jq -r --arg service "$SERVICE_NAME" '.services[$service].container_name // empty')
     
-    # Check if container exists and is running with either naming format
-    if docker ps --format '{{.Names}}' | grep -qE "^(${CONTAINER_NAME_UNDERSCORE}|${CONTAINER_NAME_HYPHEN})$"; then
-        return 0
+    if [[ ! -z "$CONTAINER_NAME" ]]; then
+        # Use the explicit container name if specified
+        if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+            return 0
+        fi
     else
-        return 1
+        # Try both underscore and hyphen formats for dynamic names
+        local CONTAINER_NAME_UNDERSCORE="${PROJECT_NAME}_${SERVICE_NAME}-1"
+        local CONTAINER_NAME_HYPHEN="${PROJECT_NAME}-${SERVICE_NAME}-1"
+        
+        # Check if container exists and is running with either naming format
+        if docker ps --format '{{.Names}}' | grep -qE "^(${CONTAINER_NAME_UNDERSCORE}|${CONTAINER_NAME_HYPHEN})$"; then
+            return 0
+        fi
     fi
+    
+    return 1
 }
 
 # Function to process a single compose file
@@ -246,7 +258,7 @@ process_compose_file() {
                     local VOLUME_USED=false
                     local SERVICES=$(echo "$JSON_CONFIG" | jq -r '.services | keys[]')
                     for SERVICE in $SERVICES; do
-                        if [[ "$RUNNING_ONLY" == "no" ]] || is_container_running "$SERVICE" "$NAME"; then
+                        if [[ "$RUNNING_ONLY" == "no" ]] || is_container_running "$SERVICE" "$NAME" "$COMPOSE_FILE"; then
                             VOLUME_USED=true
                             break
                         fi
@@ -266,7 +278,7 @@ process_compose_file() {
         # Get services with bind mounts
         local SERVICES=$(echo "$JSON_CONFIG" | jq -r '.services | to_entries[] | select(.value.volumes != null) | .key')
         for SERVICE in $SERVICES; do
-            if [[ "$RUNNING_ONLY" == "yes" ]] && ! is_container_running "$SERVICE" "$NAME"; then
+            if [[ "$RUNNING_ONLY" == "yes" ]] && ! is_container_running "$SERVICE" "$NAME" "$COMPOSE_FILE"; then
                 echo "Skipping bind mounts for service $SERVICE (container not running)"
                 continue
             fi
@@ -340,7 +352,7 @@ show_compose_file() {
         local SERVICES=$(echo "$JSON_CONFIG" | jq -r '.services | keys[]')
         for SERVICE in $SERVICES; do
             local RUNNING=""
-            if is_container_running "$SERVICE" "$NAME"; then
+            if is_container_running "$SERVICE" "$NAME" "$COMPOSE_FILE"; then
                 RUNNING="(running)"
             else
                 RUNNING="(stopped)"
@@ -372,8 +384,15 @@ create_final_backup() {
     # Create the backup directory if it doesn't exist
     mkdir -p "$BACKUP_DIR"
     
+    # Create a config/files directory for loose files
+    mkdir -p "$TEMP_BACKUP_DIR/config/files"
+    
     # Copy compose file to temp directory
     cp "$COMPOSE_FILE" "$TEMP_BACKUP_DIR/config/compose.yml"
+    
+    # Copy all files from the compose file's directory (excluding subdirectories)
+    local COMPOSE_DIR=$(dirname "$COMPOSE_FILE")
+    find "$COMPOSE_DIR" -maxdepth 1 -type f ! -name "compose.yml" -exec cp {} "$TEMP_BACKUP_DIR/config/files/" \;
     
     # Create final backup archive
     local FINAL_BACKUP="$BACKUP_DIR/${PROJECT_NAME}_${TIMESTAMP}.tar.gz"
