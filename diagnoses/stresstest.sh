@@ -39,9 +39,10 @@ LOGGER_PID=$!
 # Phase 1: Moderate stress
 stress-ng --cpu 16 --vm 2 --vm-bytes 75% --timeout ${PHASE_DURATION}s --metrics-brief
 
+echo "Phase 1 complete, starting phase 2"
+
 # Phase 2: Full stress
 stress-ng --cpu 32 --vm 4 --vm-bytes 50% --timeout ${PHASE_DURATION}s --metrics-brief
-
 # Kill logger
 kill "$LOGGER_PID"
 
