@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "This script will copy the kwinrc file to a backup location and then delete the original to force a display reset"
 
 cp -a ~/.config/kdedefaults/kwinrc ~/.config/kdedefaults/kwinrc.bkup
 rm -f ~/.config/kdedefaults/kwinrc
