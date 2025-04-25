@@ -124,7 +124,7 @@ if ! sudo dracut --force "$initramfs_path" "$full_kernelver"; then
   exit 1
 fi
 
-# Verify initramfs was created
+## Verify initramfs was created successfully
 if [[ ! -f "$initramfs_path" ]]; then
   echo "❌ Initramfs not found after generation: $initramfs_path"
   exit 1
@@ -133,7 +133,7 @@ fi
 echo "==> Installing ZFS module into new kernel"
 sudo dkms install -m "$dkms_name" -v "$dkms_version" -k "$kernelver"
 
-# Set GRUB default
+## Sets GRUB default to current full kernel version
 echo "==> Setting GRUB default to Fedora $full_kernelver"
 sudo grub2-set-default "Fedora Linux ($full_kernelver)"
 
@@ -147,7 +147,6 @@ echo "🚀 GRUB default set to: Fedora Linux ($full_kernelver)"
 echo "🛠  Reboot to use it, then verify with 'uname -r'"
 echo "🧼  Don't forget to uncomment 'exclude=kernel*' in /etc/dnf/dnf.conf"
 
-# Restore the kernel exclusion line
 echo "==> Restoring kernel exclusion in DNF config"
 if grep -q "^#${kernel_exclude_line}$" "$dnf_conf"; then
     sudo sed -i "s/^#${kernel_exclude_line}$/${kernel_exclude_line}/" "$dnf_conf"
