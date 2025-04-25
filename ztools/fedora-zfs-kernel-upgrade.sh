@@ -32,11 +32,15 @@ if ! dnf5 repoquery kernel-devel-$full_kernelver &>/dev/null; then
   exit 1
 fi
 
+# Install kernel-devel first
+echo "==> Installing kernel-devel-$full_kernelver"
+sudo dnf5 install -y kernel-devel-$full_kernelver
+
 # Download RPMs for dry-run test
 dldir="/usr/src/kernels"
-echo "==> Downloading kernel-core and kernel-devel RPMs"
+echo "==> Downloading kernel-core RPM"
 sudo rm -rf "$dldir/$full_kernelver"
-dnf5 download --destdir="$dldir" kernel-core-$full_kernelver kernel-devel-$full_kernelver
+dnf5 download --destdir="$dldir" kernel-core-$full_kernelver
 
 # Extract kernel-devel
 echo "==> Extracting kernel-devel"
@@ -110,8 +114,8 @@ echo
 echo "✅ DKMS build succeeded for $dkms_name on kernel $kernelver"
 echo "==> Proceeding with kernel installation..."
 
-echo "==> Installing kernel-core and kernel-devel..."
-sudo dnf5 install -y kernel-core-$full_kernelver kernel-devel-$full_kernelver
+echo "==> Installing kernel-core..."
+sudo dnf5 install -y kernel-core-$full_kernelver
 
 echo "==> Rebuilding initramfs for $kernelver"
 initramfs_path="/boot/initramfs-${full_kernelver}.img"
