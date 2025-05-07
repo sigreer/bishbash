@@ -2,7 +2,7 @@
 
 # Timestamp for log collection
 TIMESTAMP=$(date "+%Y-%m-%d_%H-%M-%S")
-LOG_DIR="$HOME/system_logs_$TIMESTAMP"
+LOG_DIR="/tank/NextcloudSideSys/logs/desktop-logs/system_logs_$TIMESTAMP"
 mkdir -p "$LOG_DIR"
 
 echo "Collecting logs from previous boot. Output will be saved in $LOG_DIR"
