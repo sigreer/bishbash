@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-debug=true
+debug=false
 force=false
 
 # Parse command line arguments
@@ -117,6 +117,25 @@ ensure_kernel_headers() {
     return 0
 }
 
+# Function to check if ZFS kernel module exists for a given kernel
+zfs_module_exists_for_kernel() {
+    local kernel_ver="$1"
+    local found=0
+    # Check for zfs.ko in common locations
+    if [[ -f "/lib/modules/${kernel_ver}/extra/zfs.ko" ]] || [[ -f "/lib/modules/${kernel_ver}/zfs/zfs.ko" ]]; then
+        found=1
+    fi
+    # Check with modinfo (succeeds if module is available for this kernel)
+    if modinfo -k "$kernel_ver" zfs &>/dev/null; then
+        found=1
+    fi
+    if [[ $found -eq 1 ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Function to check if a kernel version supports ZFS
 check_zfs_support() {
     local kernel_ver=$1
@@ -141,6 +160,12 @@ check_zfs_support() {
             echo "❌ ZFS not compatible with kernel $kernel_ver"
             return 1
         fi
+    fi
+    
+    # After build, check for actual ZFS kernel module
+    if ! zfs_module_exists_for_kernel "$kernel_ver"; then
+        echo "❌ ZFS kernel module not found for $kernel_ver after build"
+        return 1
     fi
     
     return 0
@@ -326,6 +351,7 @@ verify_and_update_kernel() {
             fi
             return 1
         fi
+        changes_made+=("Installed kernel-devel for $latest_zfs_kernel")
         
         # Install kernel-core
         echo "==> Installing kernel-core-$full_kernelver"
@@ -337,6 +363,7 @@ verify_and_update_kernel() {
             fi
             return 1
         fi
+        changes_made+=("Installed kernel-core for $latest_zfs_kernel")
         
         # Re-enable kernel exclusion
         if grep -q "^#${kernel_exclude_line}$" "$dnf_conf"; then
@@ -351,6 +378,7 @@ verify_and_update_kernel() {
             echo "❌ Failed to build initramfs for $full_kernelver"
             return 1
         fi
+        changes_made+=("Rebuilt initramfs for $latest_zfs_kernel")
         
         # Install ZFS module
         echo "==> Installing ZFS module into new kernel"
@@ -358,11 +386,38 @@ verify_and_update_kernel() {
             echo "❌ Failed to install ZFS module for $latest_zfs_kernel"
             return 1
         fi
+        changes_made+=("Built and installed ZFS module for $latest_zfs_kernel")
     fi
     
     # Set GRUB to boot the ZFS-supported kernel
     echo "==> Setting GRUB default to Fedora $latest_zfs_kernel"
-    sudo grub2-set-default "Fedora Linux ($latest_zfs_kernel.x86_64)"
+    sudo grubby --set-default "/boot/vmlinuz-${latest_zfs_kernel}.x86_64"
+    changes_made+=("Set default boot kernel to $latest_zfs_kernel")
+    
+    # Confirm default kernel and initramfs
+    grub_default=$(sudo grubby --default-kernel)
+    initramfs_path="/boot/initramfs-${latest_zfs_kernel}.x86_64.img"
+    if [[ -f "$initramfs_path" ]]; then
+        initramfs_status="Present"
+    else
+        initramfs_status="Missing" 
+    fi
+
+    echo
+    echo "==================== SUMMARY ===================="
+    if [[ ${#changes_made[@]} -eq 0 ]]; then
+        echo "No changes were made."
+    else
+        echo "Changes made during this run:"
+        for change in "${changes_made[@]}"; do
+            echo "  - $change"
+        done
+    fi
+    echo "-----------------------------------------------"
+    echo "Kernel elected for boot: $latest_zfs_kernel"
+    echo "GRUB default kernel:    $grub_default"
+    echo "Initramfs for kernel:   $initramfs_path ($initramfs_status)"
+    echo "================================================"
     
     return 0
 }
@@ -472,6 +527,9 @@ cleanup() {
 
 # Set up trap to ensure cleanup runs on script exit
 trap cleanup EXIT
+
+# Track changes
+changes_made=()
 
 # Verify and update kernel state
 verify_and_update_kernel
