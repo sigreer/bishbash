@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-debug=false
+debug=true
 force=false
 
 # Parse command line arguments
