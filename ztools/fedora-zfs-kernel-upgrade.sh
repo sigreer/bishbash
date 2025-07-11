@@ -30,8 +30,10 @@ if [[ -z "$zfs_src_dir" ]]; then
 fi
 zfsdkms_version=$(basename "$zfs_src_dir" | sed 's/^zfs-//')
 dkms_name="zfs"
-dkms_version="${zfsdkms_version}-1"
-dkms_src="/usr/src/${dkms_name}-${dkms_version}"
+#dkms_version="${zfsdkms_version}-1"
+#dkms_src="/usr/src/${dkms_name}-${dkms_version}"
+dkms_src="$zfs_src_dir"
+dkms_version=$(basename "$dkms_src" | sed 's/^zfs-//')
 
 # Link DKMS source path if necessary
 if [[ ! -d "$dkms_src" ]]; then
