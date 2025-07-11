@@ -16,3 +16,4 @@ localonly_*
 *.log.*.*.*.*
 *.log.*.*.*.*.*
 *.log.*.*.*.*.*.*
+localonly/
