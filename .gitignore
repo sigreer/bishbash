@@ -17,3 +17,4 @@ localonly_*
 *.log.*.*.*.*.*
 *.log.*.*.*.*.*.*
 localonly/
+utils/kiro_attempts/
